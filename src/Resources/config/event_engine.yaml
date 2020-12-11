@@ -124,6 +124,8 @@ services:
             - '%event_engine.aggregates%'
             - '%event_engine.types%'
             - '%event_engine.listeners%'
+            - '%event_engine.documentStore%'
+            - '%event_engine.eventQueue%'
     ADS\Bundle\EventEngineBundle\Persistency\SingleStreamStrategy: ~
     ADS\Bundle\EventEngineBundle\Persistency\TransactionalConnection:
         arguments:
