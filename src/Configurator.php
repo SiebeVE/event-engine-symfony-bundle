@@ -6,7 +6,6 @@ namespace ADS\Bundle\EventEngineBundle;
 
 use ADS\Bundle\EventEngineBundle\Command\ControllerCommand;
 use ADS\Bundle\EventEngineBundle\Util\EventEngineUtil;
-use EventEngine\DocumentStore\DocumentStore;
 use EventEngine\EventEngine;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use EventEngine\Logger\SimpleMessageEngine;
@@ -44,7 +43,6 @@ final class Configurator
     private array $typeClasses;
     /** @var array<class-string> */
     private array $listenerClasses;
-    private ?DocumentStore $documentStore;
     private ?MessageProducer $eventQueue;
 
     /**
@@ -70,7 +68,6 @@ final class Configurator
         array $aggregateClasses,
         array $typeClasses,
         array $listenerClasses,
-        ?DocumentStore $documentStore,
         ?MessageProducer $eventQueue
     ) {
         $this->flavour = $flavour;
@@ -86,7 +83,6 @@ final class Configurator
         $this->aggregateClasses = $aggregateClasses;
         $this->typeClasses = $typeClasses;
         $this->listenerClasses = $listenerClasses;
-        $this->documentStore = $documentStore;
         $this->eventQueue = $eventQueue;
     }
 
@@ -149,7 +145,7 @@ final class Configurator
             $this->multiModelStore,
             $this->simpleMessageEngine,
             $this->container,
-            $this->documentStore,
+            null,
             $this->eventQueue,
         )
             ->bootstrap(

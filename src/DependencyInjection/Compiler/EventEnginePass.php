@@ -17,6 +17,7 @@ use ADS\Bundle\EventEngineBundle\Util\EventEngineUtil;
 use ADS\Bundle\EventEngineBundle\Util\StringUtil;
 use EventEngine\DocumentStore\DocumentStore;
 use EventEngine\EventEngineDescription;
+use EventEngine\Messaging\MessageProducer;
 use ReflectionClass;
 use RuntimeException;
 use Symfony\Component\Config\Resource\ReflectionClassResource;
@@ -25,7 +26,6 @@ use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
-
 use function array_filter;
 use function array_map;
 use function array_reduce;
@@ -126,6 +126,15 @@ final class EventEnginePass implements CompilerPassInterface
                     : null;
             },
         ];
+
+        /** @var ?Definition $eventQueue */
+        $eventQueue = null;
+        foreach ($resources as $resourceReflectionClass) {
+            if ($resourceReflectionClass->implementsInterface(MessageProducer::class)) {
+                $eventQueue = new Definition($resourceReflectionClass->name);
+            }
+        }
+        $container->setDefinition('event_engine.event_queue', $eventQueue);
 
         foreach ($mappers as $name => $mapper) {
             $container->setParameter(
