@@ -18,6 +18,7 @@ use ADS\Bundle\EventEngineBundle\Util\StringUtil;
 use EventEngine\DocumentStore\DocumentStore;
 use EventEngine\EventEngineDescription;
 use EventEngine\Messaging\MessageProducer;
+use Exception;
 use ReflectionClass;
 use RuntimeException;
 use Symfony\Component\Config\Resource\ReflectionClassResource;
@@ -26,6 +27,7 @@ use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
+
 use function array_filter;
 use function array_map;
 use function array_reduce;
@@ -130,11 +132,20 @@ final class EventEnginePass implements CompilerPassInterface
         /** @var ?Definition $eventQueue */
         $eventQueue = null;
         foreach ($resources as $resourceReflectionClass) {
-            if ($resourceReflectionClass->implementsInterface(MessageProducer::class)) {
-                $eventQueue = new Definition($resourceReflectionClass->name);
+            if (! $resourceReflectionClass->implementsInterface(MessageProducer::class)) {
+                continue;
             }
+
+            if ($eventQueue instanceof Definition) {
+                throw new Exception('You can only have 1 event queue.');
+            }
+
+            $eventQueue = new Definition($resourceReflectionClass->name);
         }
-        $container->setDefinition('event_engine.event_queue', $eventQueue);
+
+        if ($eventQueue instanceof Definition) {
+            $container->setDefinition('event_engine.event_queue', $eventQueue);
+        }
 
         foreach ($mappers as $name => $mapper) {
             $container->setParameter(
