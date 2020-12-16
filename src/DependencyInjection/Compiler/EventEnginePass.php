@@ -129,22 +129,26 @@ final class EventEnginePass implements CompilerPassInterface
             },
         ];
 
-        /** @var ?Definition $eventQueue */
-        $eventQueue = null;
+        /** @var ?Definition $eventQueueDefinition */
+        $eventQueueDefinition = null;
         foreach ($resources as $resourceReflectionClass) {
             if (! $resourceReflectionClass->implementsInterface(MessageProducer::class)) {
                 continue;
             }
 
-            if ($eventQueue instanceof Definition) {
+            if ($eventQueueDefinition instanceof Definition) {
                 throw new Exception('You can only have 1 event queue.');
             }
 
-            $eventQueue = new Definition($resourceReflectionClass->name);
+            if ($container->hasDefinition($resourceReflectionClass->name)) {
+                $eventQueueDefinition = $container->getDefinition($resourceReflectionClass->name);
+            } else {
+                $eventQueueDefinition = new Definition($resourceReflectionClass->name);
+            }
         }
 
-        if ($eventQueue instanceof Definition) {
-            $container->setDefinition('event_engine.event_queue', $eventQueue);
+        if ($eventQueueDefinition instanceof Definition) {
+            $container->setDefinition('event_engine.event_queue', $eventQueueDefinition);
         }
 
         foreach ($mappers as $name => $mapper) {
